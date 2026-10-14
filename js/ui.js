@@ -1,35 +1,53 @@
 // ============================================================
-// UI - Interfaz de Usuario
+// UI - INTERFAZ DE USUARIO
 // Diseñador: Integrante 3
-// Descripción: HUD, menú principal, pantalla de victoria y Game Over.
+// Descripción: HUD, menú principal, pantalla de victoria,
+// Game Over, menú de pausa, modal de controles y toasts.
 // ============================================================
 
 // ----------------------------------------------------------
 // HUD (Heads-Up Display)
 // ----------------------------------------------------------
-function updateHUD(lives, levelNum, score = 0, time = null) {
-  const livesEl = document.getElementById('score');
-  const levelEl = document.getElementById('level-title');
-  const timeEl = document.getElementById('time');
+function updateHUD(lives, levelNum, score = 0, timeLeft = null) {
+  const livesEl = document.getElementById('hud-lives');
+  const levelEl = document.getElementById('hud-level');
+  const timeEl = document.getElementById('hud-time');
+  const scoreEl = document.getElementById('hud-score');
 
-  if (livesEl) livesEl.innerText = 'Vidas: ' + '❤️'.repeat(Math.max(0, lives));
-  if (levelEl) levelEl.innerText = 'Nivel: ' + levelNum;
-  if (timeEl && time !== null) timeEl.innerText = 'Tiempo: ' + time + 's';
+  if (livesEl) {
+    const safeLives = Math.max(0, lives);
+    livesEl.innerText = '❤️'.repeat(safeLives) || '💀 Sin vidas';
+  }
+
+  if (levelEl) {
+    levelEl.innerText = 'Nivel ' + levelNum;
+  }
+
+  if (scoreEl) {
+    scoreEl.innerText = '🪙 ' + score;
+  }
+
+  if (timeEl && timeLeft !== null) {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = Math.floor(timeLeft % 60);
+    const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    timeEl.innerText = '⏳ ' + formatted;
+
+    if (timeLeft <= 20) {
+      timeEl.classList.add('time-urgent');
+    } else {
+      timeEl.classList.remove('time-urgent');
+    }
+  }
 }
 
 // ----------------------------------------------------------
 // MENÚ PRINCIPAL
 // ----------------------------------------------------------
 function showMainMenu() {
+  hideAllScreens();
   const menu = document.getElementById('main-menu');
-  const canvas = document.getElementById('game-canvas');
-  const victory = document.getElementById('victory-screen');
-  const gameover = document.getElementById('gameover-screen');
-
   if (menu) menu.style.display = 'flex';
-  if (canvas) canvas.style.display = 'none';
-  if (victory) victory.style.display = 'none';
-  if (gameover) gameover.style.display = 'none';
 }
 
 function hideMainMenu() {
@@ -40,59 +58,125 @@ function hideMainMenu() {
 // ----------------------------------------------------------
 // PANTALLA DE VICTORIA
 // ----------------------------------------------------------
-function showVictoryScreen(finalScore = 0) {
+function showVictoryScreen(finalScore = 0, livesRemaining = 3) {
+  hideAllScreens();
   const victory = document.getElementById('victory-screen');
-  const canvas = document.getElementById('game-canvas');
-  const scoreEl = document.getElementById('final-score');
+  const scoreEl = document.getElementById('victory-score');
+  const livesEl = document.getElementById('victory-lives');
+  const rankEl = document.getElementById('victory-rank');
 
   if (victory) victory.style.display = 'flex';
-  if (canvas) canvas.style.display = 'none';
-  if (scoreEl) scoreEl.innerText = 'Puntuación final: ' + finalScore;
+  if (scoreEl) scoreEl.innerText = finalScore + ' pts';
+  if (livesEl) livesEl.innerText = '❤️'.repeat(Math.max(1, livesRemaining));
+
+  if (rankEl) {
+    if (finalScore >= 1800 && livesRemaining === 3) {
+      rankEl.innerText = 'S - Maestro del Tiempo';
+      rankEl.style.color = '#ffd700';
+    } else if (finalScore >= 1200) {
+      rankEl.innerText = 'A - Príncipe Valeroso';
+      rankEl.style.color = '#00e676';
+    } else {
+      rankEl.innerText = 'B - Superviviente';
+      rankEl.style.color = '#00e5ff';
+    }
+  }
+
+  if (window.soundManager) window.soundManager.play('victory');
 }
 
 // ----------------------------------------------------------
 // PANTALLA DE GAME OVER
 // ----------------------------------------------------------
-function showGameOverScreen() {
+function showGameOverScreen(tip = null) {
+  hideAllScreens();
   const gameover = document.getElementById('gameover-screen');
-  const canvas = document.getElementById('game-canvas');
+  const tipEl = document.getElementById('gameover-tip');
 
   if (gameover) gameover.style.display = 'flex';
-  if (canvas) canvas.style.display = 'none';
+  if (tipEl && tip) tipEl.innerText = `"${tip}"`;
+
+  if (window.soundManager) window.soundManager.play('gameover');
+}
+
+// ----------------------------------------------------------
+// PANTALLA DE PAUSA
+// ----------------------------------------------------------
+function showPauseScreen() {
+  const pause = document.getElementById('pause-screen');
+  if (pause) pause.style.display = 'flex';
+}
+
+function hidePauseScreen() {
+  const pause = document.getElementById('pause-screen');
+  if (pause) pause.style.display = 'none';
+}
+
+// ----------------------------------------------------------
+// BANNER DE TRANSICIÓN DE NIVEL
+// ----------------------------------------------------------
+function showLevelTransition(levelTitle, callback) {
+  const banner = document.getElementById('level-transition-banner');
+  if (!banner) {
+    if (callback) callback();
+    return;
+  }
+
+  banner.innerText = levelTitle.toUpperCase();
+  banner.style.display = 'block';
+  setTimeout(() => {
+    banner.style.opacity = '1';
+  }, 20);
+
+  setTimeout(() => {
+    banner.style.opacity = '0';
+    setTimeout(() => {
+      banner.style.display = 'none';
+      if (callback) callback();
+    }, 400);
+  }, 1200);
 }
 
 // ----------------------------------------------------------
 // OCULTAR TODAS LAS PANTALLAS (para empezar a jugar)
 // ----------------------------------------------------------
 function hideAllScreens() {
-  ['main-menu', 'victory-screen', 'gameover-screen'].forEach(id => {
+  ['main-menu', 'victory-screen', 'gameover-screen', 'pause-screen', 'controls-modal'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
-  const canvas = document.getElementById('game-canvas');
-  if (canvas) canvas.style.display = 'block';
 }
 
 // ----------------------------------------------------------
-// NOTIFICACIÓN TEMPORAL (para recoger monedas, etc.)
+// MODAL DE CONTROLES
 // ----------------------------------------------------------
-function showToast(message, duration = 1500) {
-  let toast = document.getElementById('toast');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.id = 'toast';
-    toast.style.position = 'absolute';
-    toast.style.top = '20px';
-    toast.style.left = '50%';
-    toast.style.transform = 'translateX(-50%)';
-    toast.style.background = 'rgba(0,0,0,0.8)';
-    toast.style.color = '#fff';
-    toast.style.padding = '10px 20px';
-    toast.style.borderRadius = '8px';
-    toast.style.fontFamily = 'Arial, sans-serif';
-    toast.style.zIndex = '1000';
-    document.body.appendChild(toast);
+function showControlsModal() {
+  const modal = document.getElementById('controls-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function hideControlsModal() {
+  const modal = document.getElementById('controls-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+// ----------------------------------------------------------
+// AUDIO TOGGLE UI
+// ----------------------------------------------------------
+function updateAudioButtonUI(muted) {
+  const btn = document.getElementById('btn-audio');
+  if (btn) {
+    btn.innerText = muted ? '🔇' : '🔊';
   }
+}
+
+// ----------------------------------------------------------
+// NOTIFICACIÓN TEMPORAL (Toast)
+// ----------------------------------------------------------
+function showToast(message, duration = 1400) {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+
   toast.innerText = message;
   toast.style.display = 'block';
   clearTimeout(toast._timeout);

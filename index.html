@@ -2,43 +2,145 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>La Mazmorra del Tiempo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>La Mazmorra del Tiempo - Videojuego de Plataformas 2D</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <!-- Canvas del juego -->
-  <canvas id="game-canvas" width="800" height="400"></canvas>
+  <div id="game-container">
+    <!-- Canvas principal del juego -->
+    <canvas id="game-canvas" width="800" height="400"></canvas>
 
-  <!-- HUD -->
-  <div id="hud">
-    <span id="score">Vidas: ❤️❤️❤️</span>
-    <span id="level-title">Nivel: 1</span>
-    <span id="time">Tiempo: 0s</span>
+    <!-- HUD (Barra de estado superior) -->
+    <div id="hud">
+      <div class="hud-group">
+        <div class="hud-card hearts" id="hud-lives">❤️❤️❤️</div>
+        <div class="hud-card level-badge" id="hud-level">Nivel 1</div>
+      </div>
+      <div class="hud-group">
+        <div class="hud-card" id="hud-time">⏳ 01:30</div>
+        <div class="hud-card" id="hud-score">🪙 0</div>
+        <button class="hud-btn" id="btn-audio" onclick="toggleAudio()" title="Activar/Silenciar Sonido">🔊</button>
+        <button class="hud-btn" id="btn-pause" onclick="togglePauseGame()" title="Pausar Juego">⏸</button>
+      </div>
+    </div>
+
+    <!-- Banner animado de transición de nivel -->
+    <div id="level-transition-banner">NIVEL 1: LAS CRIPTAS DEL SULTÁN</div>
+
+    <!-- Toast de notificaciones (monedas, bonus de tiempo) -->
+    <div id="toast"></div>
+
+    <!-- Menú Principal -->
+    <div id="main-menu" class="screen">
+      <h1 class="screen-title">LA MAZMORRA DEL TIEMPO</h1>
+      <p class="screen-subtitle">Una aventura de plataformas inspirada en Prince of Persia</p>
+      
+      <div class="screen-lore">
+        "Atrapado en las antiguas mazmorras subterráneas, tu destino pende de un hilo.
+        Supera los tres niveles, esquiva las mortíferas cuchillas y recupera las Arenas del Tiempo para escapar con vida."
+      </div>
+
+      <div class="btn-group">
+        <button class="btn-dungeon" onclick="startGame()">▶ Comenzar Aventura</button>
+        <button class="btn-dungeon secondary" onclick="showControlsModal()">📜 Cómo Jugar</button>
+      </div>
+    </div>
+
+    <!-- Modal de Controles / Instrucciones -->
+    <div id="controls-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-title">
+          <span>Controles e Instrucciones</span>
+          <span style="cursor:pointer;" onclick="hideControlsModal()">✖</span>
+        </div>
+        <div class="controls-list">
+          <div class="control-item">
+            <span>Moverse a la izquierda / derecha:</span>
+            <span class="key-badge">A / D &nbsp;o&nbsp; ← / →</span>
+          </div>
+          <div class="control-item">
+            <span>Saltar repisas y abismos:</span>
+            <span class="key-badge">ESPACIO &nbsp;o&nbsp; W / ↑</span>
+          </div>
+          <div class="control-item">
+            <span>Pausar el juego:</span>
+            <span class="key-badge">P &nbsp;o&nbsp; ESC</span>
+          </div>
+          <div class="control-item">
+            <span>Objetivo:</span>
+            <span style="color:#ffd700;">Llega a la puerta mágica de salida de cada nivel</span>
+          </div>
+          <div class="control-item">
+            <span>Arenas del Tiempo ⌛:</span>
+            <span style="color:#00e5ff;">Recógelas para ganar puntos y tiempo extra</span>
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <button class="btn-dungeon" onclick="hideControlsModal()">Entendido</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pantalla de Pausa -->
+    <div id="pause-screen" class="screen" style="display: none;">
+      <h1 class="screen-title" style="color:#00e5ff;">JUEGO EN PAUSA</h1>
+      <p class="screen-subtitle">Toma un respiro antes de continuar...</p>
+      <div class="btn-group">
+        <button class="btn-dungeon" onclick="togglePauseGame()">▶ Continuar</button>
+        <button class="btn-dungeon secondary" onclick="restartCurrentLevel()">🔁 Reintentar Nivel</button>
+        <button class="btn-dungeon secondary" onclick="returnToMainMenu()">🏠 Menú Principal</button>
+      </div>
+    </div>
+
+    <!-- Pantalla de Victoria -->
+    <div id="victory-screen" class="screen" style="display: none;">
+      <h1 class="screen-title" style="color:#ffd700;">¡LIBERTAD CONQUISTADA!</h1>
+      <p class="screen-subtitle">Has derrotado las trampas de la Mazmorra del Tiempo</p>
+      
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-label">Puntuación Final</div>
+          <div class="stat-value" id="victory-score">0 pts</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Vidas Restantes</div>
+          <div class="stat-value" id="victory-lives">❤️❤️❤️</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Rango Obtenido</div>
+          <div class="stat-value" id="victory-rank" style="color:#00e676;">S - Sultán del Tiempo</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Niveles Superados</div>
+          <div class="stat-value">3 / 3</div>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn-dungeon" onclick="restartGame()">🔁 Jugar de Nuevo</button>
+        <button class="btn-dungeon secondary" onclick="returnToMainMenu()">🏠 Menú Principal</button>
+      </div>
+    </div>
+
+    <!-- Pantalla de Game Over -->
+    <div id="gameover-screen" class="screen" style="display: none;">
+      <h1 class="screen-title" style="color:#ff3344;">HAS PERECIDO</h1>
+      <p class="screen-subtitle">Las arenas del tiempo han sepultado tu destino...</p>
+      <div class="screen-lore" id="gameover-tip" style="border-left-color: #ff3344;">
+        "Consejo: Observa el ritmo de las cuchillas y calcula el impulso en los saltos largos."
+      </div>
+      <div class="btn-group">
+        <button class="btn-dungeon" onclick="restartCurrentLevel()">🔁 Reintentar Nivel</button>
+        <button class="btn-dungeon secondary" onclick="restartGame()">↩ Reiniciar desde Nivel 1</button>
+        <button class="btn-dungeon secondary" onclick="returnToMainMenu()">🏠 Menú Principal</button>
+      </div>
+    </div>
   </div>
 
-  <!-- Menú principal -->
-  <div id="main-menu" class="screen">
-    <h1>La Mazmorra del Tiempo</h1>
-    <p>Supera los 3 niveles y escapa del laberinto.</p>
-    <button onclick="startGame()">▶ Jugar</button>
-  </div>
-
-  <!-- Pantalla de victoria -->
-  <div id="victory-screen" class="screen" style="display:none;">
-    <h1>¡Victoria!</h1>
-    <p id="final-score">Puntuación final: 0</p>
-    <button onclick="restartGame()">🔁 Jugar de nuevo</button>
-  </div>
-
-  <!-- Pantalla de Game Over -->
-  <div id="gameover-screen" class="screen" style="display:none;">
-    <h1>Game Over</h1>
-    <p>Has caído en la mazmorra...</p>
-    <button onclick="restartGame()">🔁 Reintentar</button>
-  </div>
-
-  <!-- Scripts (orden importante) -->
+  <!-- Scripts en orden modular estricto -->
+  <script src="js/audio.js"></script>
   <script src="js/level1.js"></script>
   <script src="js/level2.js"></script>
   <script src="js/level3.js"></script>
