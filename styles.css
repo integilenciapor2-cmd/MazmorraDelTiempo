@@ -1,28 +1,378 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=MedievalSharp&family=Outfit:wght@400;500;700&display=swap');
+
+:root {
+  --primary-gold: #ffd700;
+  --secondary-gold: #d4af37;
+  --dark-gold: #996515;
+  --bg-deep: #0a0812;
+  --panel-bg: rgba(18, 14, 28, 0.94);
+  --border-gold: rgba(212, 175, 55, 0.6);
+  --neon-cyan: #00e5ff;
+  --crimson-danger: #ff3344;
+  --glow-shadow: 0 0 25px rgba(212, 175, 55, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
 body {
-    background-color: #111;
-    color: #fff;
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
+  background: radial-gradient(circle at center, #1b1329 0%, #0c0816 65%, #050409 100%);
+  font-family: 'Outfit', -apple-system, sans-serif;
+  color: #f5f5f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
 }
+
+/* Contenedor principal del juego con marco ornamental */
 #game-container {
-    position: relative;
-    border: 4px solid #444;
+  position: relative;
+  width: 800px;
+  height: 400px;
+  border: 4px solid var(--border-gold);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(212, 175, 55, 0.25);
+  background: #000;
+  overflow: hidden;
 }
-canvas {
-    background-color: #222;
-    display: block;
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #110c1c;
+  image-rendering: pixelated;
 }
+
+/* ============================================================
+   HUD (Heads-Up Display)
+   ============================================================ */
 #hud {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    right: 10px;
-    display: flex;
-    justify-content: space-between;
-    font-size: 18px;
-    font-weight: bold;
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.hud-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.hud-card {
+  background: rgba(14, 10, 24, 0.82);
+  border: 1.5px solid rgba(212, 175, 55, 0.45);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-card.hearts {
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
+.hud-card.level-badge {
+  color: var(--primary-gold);
+  border-color: var(--secondary-gold);
+}
+
+.hud-card.time-urgent {
+  color: var(--crimson-danger);
+  border-color: var(--crimson-danger);
+  animation: pulse-red 1s infinite alternate;
+}
+
+@keyframes pulse-red {
+  from { box-shadow: 0 0 6px rgba(255, 51, 68, 0.4); }
+  to { box-shadow: 0 0 16px rgba(255, 51, 68, 0.9); }
+}
+
+.hud-btn {
+  pointer-events: auto;
+  cursor: pointer;
+  background: rgba(20, 14, 32, 0.85);
+  border: 1.5px solid var(--border-gold);
+  color: #ffd700;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.hud-btn:hover {
+  background: rgba(212, 175, 55, 0.3);
+  transform: scale(1.08);
+}
+
+/* ============================================================
+   PANTALLAS / OVERLAYS (Menú, Victoria, Game Over, Pausa)
+   ============================================================ */
+.screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at center, rgba(28, 20, 44, 0.96) 0%, rgba(12, 8, 20, 0.98) 100%);
+  z-index: 100;
+  padding: 24px;
+  text-align: center;
+  backdrop-filter: blur(6px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.screen-title {
+  font-family: 'Cinzel', serif;
+  font-size: 38px;
+  font-weight: 900;
+  color: var(--primary-gold);
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 0 4px 8px #000;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+
+.screen-subtitle {
+  font-family: 'MedievalSharp', cursive;
+  font-size: 17px;
+  color: #d1c4e9;
+  margin-bottom: 18px;
+  text-shadow: 0 2px 4px #000;
+}
+
+.screen-lore {
+  max-width: 580px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #b0bec5;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 10px 18px;
+  border-radius: 8px;
+  border-left: 3px solid var(--secondary-gold);
+  margin-bottom: 22px;
+  font-style: italic;
+}
+
+/* Botones con estilo Prince of Persia */
+.btn-group {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn-dungeon {
+  font-family: 'Cinzel', serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #fff;
+  background: linear-gradient(135deg, #7b2d8e 0%, #4a154b 100%);
+  border: 2px solid #ab47bc;
+  padding: 11px 26px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), 0 0 12px rgba(171, 71, 188, 0.4);
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-dungeon:hover {
+  transform: translateY(-2px) scale(1.04);
+  background: linear-gradient(135deg, #8e35a3 0%, #5d1b5e 100%);
+  border-color: #ffd700;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6);
+  color: #ffd700;
+}
+
+.btn-dungeon.secondary {
+  background: rgba(30, 22, 45, 0.85);
+  border-color: rgba(212, 175, 55, 0.5);
+  color: #e0e0e0;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+.btn-dungeon.secondary:hover {
+  background: rgba(60, 45, 85, 0.9);
+  color: #fff;
+}
+
+/* Modal de Instrucciones y Controles */
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(5, 4, 10, 0.92);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 150;
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background: rgba(24, 18, 38, 0.98);
+  border: 2px solid var(--secondary-gold);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 520px;
+  width: 90%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9), 0 0 25px rgba(212, 175, 55, 0.3);
+  text-align: left;
+}
+
+.modal-title {
+  font-family: 'Cinzel', serif;
+  font-size: 22px;
+  color: var(--primary-gold);
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  padding-bottom: 8px;
+}
+
+.controls-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.control-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.key-badge {
+  background: #311b92;
+  border: 1px solid #7c4dff;
+  color: #ffd700;
+  font-family: monospace;
+  font-weight: bold;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+/* Estadísticas de Victoria */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  max-width: 440px;
+  margin: 16px auto 24px auto;
+  width: 100%;
+}
+
+.stat-box {
+  background: rgba(20, 15, 32, 0.85);
+  border: 1px solid var(--border-gold);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #b0bec5;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-family: 'Cinzel', serif;
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--primary-gold);
+  margin-top: 4px;
+}
+
+/* Banner de transición de nivel */
+#level-transition-banner {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(10, 7, 18, 0.94);
+  border: 2px solid var(--primary-gold);
+  border-radius: 10px;
+  padding: 16px 36px;
+  font-family: 'Cinzel', serif;
+  font-size: 24px;
+  color: var(--primary-gold);
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  z-index: 120;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* Toast de recompensas */
+#toast {
+  position: absolute;
+  top: 55px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(24, 18, 38, 0.95);
+  border: 1px solid var(--primary-gold);
+  color: #ffd700;
+  padding: 6px 18px;
+  border-radius: 20px;
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  z-index: 110;
+  display: none;
+  animation: toastPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes toastPop {
+  from { transform: translate(-50%, -10px) scale(0.9); opacity: 0; }
+  to { transform: translate(-50%, 0) scale(1); opacity: 1; }
 }
