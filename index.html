@@ -1,26 +1,49 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>La Mazmorra del Tiempo</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <title>La Mazmorra del Tiempo</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="game-container">
-        <canvas id="gameCanvas" width="800" height="400"></canvas>
-        <div id="hud">
-            <span id="score">Vidas: ❤️❤️❤️</span>
-            <span id="level-title">Nivel: 1</span>
-        </div>
-    </div>
 
-    <!-- Scripts Modulares -->
-    <script src="js/player.js"></script>
-    <script src="js/level1.js"></script>
-    <script src="js/level2.js"></script>
-    <script src="js/level3.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/main.js"></script>
+  <!-- Canvas del juego -->
+  <canvas id="game-canvas" width="800" height="400"></canvas>
+
+  <!-- HUD -->
+  <div id="hud">
+    <span id="score">Vidas: ❤️❤️❤️</span>
+    <span id="level-title">Nivel: 1</span>
+    <span id="time">Tiempo: 0s</span>
+  </div>
+
+  <!-- Menú principal -->
+  <div id="main-menu" class="screen">
+    <h1>La Mazmorra del Tiempo</h1>
+    <p>Supera los 3 niveles y escapa del laberinto.</p>
+    <button onclick="startGame()">▶ Jugar</button>
+  </div>
+
+  <!-- Pantalla de victoria -->
+  <div id="victory-screen" class="screen" style="display:none;">
+    <h1>¡Victoria!</h1>
+    <p id="final-score">Puntuación final: 0</p>
+    <button onclick="restartGame()">🔁 Jugar de nuevo</button>
+  </div>
+
+  <!-- Pantalla de Game Over -->
+  <div id="gameover-screen" class="screen" style="display:none;">
+    <h1>Game Over</h1>
+    <p>Has caído en la mazmorra...</p>
+    <button onclick="restartGame()">🔁 Reintentar</button>
+  </div>
+
+  <!-- Scripts (orden importante) -->
+  <script src="js/level1.js"></script>
+  <script src="js/level2.js"></script>
+  <script src="js/level3.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>
