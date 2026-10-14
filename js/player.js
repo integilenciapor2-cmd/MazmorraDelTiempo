@@ -6,9 +6,9 @@ class Player {
         this.height = 48;
         this.vx = 0;
         this.vy = 0;
-        this.speed = 4;
+        this.speed = 6;
         this.gravity = 0.5;
-        this.jumpPower = -11;
+        this.jumpPower = -13;
         this.isGrounded = false;
         this.lives = 3;
         this.facingRight = true;
